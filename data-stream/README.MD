@@ -26,6 +26,6 @@ Install [Terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-
   
 ### Deploy using Trigger Terraform  
 
-## Source  
+## Preferences  
 
 Big thanks to **@Nucleus Engineering** [hack-your-pipie/01_ingest_and_transform](https://github.com/NucleusEngineering/hack-your-pipe/tree/main/01_ingest_and_transform)  
