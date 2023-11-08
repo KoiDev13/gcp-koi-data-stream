@@ -17,6 +17,7 @@ import requests
 import json
 import time
 import argparse
+from datetime import datetime, timedelta
 
 
 def main(endpoint):
@@ -24,12 +25,15 @@ def main(endpoint):
 
     uid = f'UID0000{int(round(random.uniform(0, 5), 0))}'
 
+    one_hour_ago = datetime.fromtimestamp(time.time() - 3600).strftime('%Y-%m-%d %H:%M:%S')
+
     if 0 <= draw < 1 / 3:
         # get view payload
         view_item_f = open('./datalayer/view_item.json')
         view_item_payload = json.load(view_item_f)
 
         view_item_payload['user_id'] = uid
+        view_item_payload['event_datetime'] = one_hour_ago
 
         # send view
         r = requests.post(endpoint, json=view_item_payload)
@@ -40,6 +44,7 @@ def main(endpoint):
         add_to_cart_payload = json.load(add_to_cart_f)
 
         add_to_cart_payload['user_id'] = uid
+        add_to_cart_payload['event_datetime'] = one_hour_ago
 
         # send add to cart
         r = requests.post(endpoint, json=add_to_cart_payload)
@@ -52,6 +57,7 @@ def main(endpoint):
             purchase_payload = json.load(purchase_f)
 
             purchase_payload['user_id'] = uid
+            purchase_payload['event_datetime'] = one_hour_ago
 
             # send request
             r = requests.post(endpoint, json=purchase_payload)
@@ -61,6 +67,7 @@ def main(endpoint):
             purchase_anomaly_payload = json.load(purchase_anomaly_f)
 
             purchase_anomaly_payload['user_id'] = uid
+            purchase_anomaly_payload['event_datetime'] = one_hour_ago
 
             # send request
             r = requests.post(endpoint, json=purchase_anomaly_payload)
