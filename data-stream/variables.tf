@@ -4,8 +4,8 @@ variable "project_id" {
 
 variable "delete_contents_on_destroy" {
   description = "If set to true, the dataset, tables and all the data will be deleted when the resource is destroyed. Otherwise, destroying the resource will fail if tables or datasets contain data."
-  type = bool
-  default = null
+  type        = bool
+  default     = null
 }
 
 variable "force_destroy" {
@@ -14,6 +14,6 @@ variable "force_destroy" {
 
 variable "gcp_region" {
   description = "GCP region to deploy resources in."
-  type = string
-  default = "us-central1"
+  type        = string
+  default     = "us-central1"
 }
