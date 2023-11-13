@@ -1,0 +1,28 @@
+steps:
+- name: 'hashicorp/terraform:1.0.9'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    if [[ "$BRANCH_NAME" == "BUILD_DEV" ]]; then
+      terraform plan -var-file=dev.tfvars
+    elif [[ "$BRANCH_NAME" == "BUILD_PROD" ]]; then
+      terraform plan -var-file=prod.tfvars
+    elif [[ "$BRANCH_NAME" == "APPLY_DEV" ]]; then
+      terraform apply -var-file=dev.tfvars
+    elif [[ "$BRANCH_NAME" == "APPLY_PROD" ]]; then
+      terraform apply -var-file=prod.tfvars
+    else
+      echo "No matching branch tag found. Skipping Terraform execution."
+    fi
+  env:
+  - 'TF_VAR_project_id=$PROJECT_ID'
+  - 'TF_VAR_region=$REGION'
+  - 'TF_VAR_zone=$ZONE'
+  - 'TF_VAR_network=$NETWORK'
+  - 'TF_VAR_subnet=$SUBNET'
+  - 'TF_VAR_image=gcr.io/$PROJECT_ID/my-image:$TAG_NAME'
+  - 'TF_VAR_instance_name=my-instance'
+  - 'TF_VAR_instance_type=n1-standard-1'
+  - 'TF_VAR_ssh_username=ubuntu'
+  - 'TF_VAR_ssh_key_file=$HOME/.ssh/id_rsa.pub'
