@@ -116,13 +116,13 @@ resource "google_cloud_run_service" "pubsub_proxy_hyp" {
       containers {
         image = "gcr.io/${var.project_id}/pubsub-proxy"
       }
-      service_account_name = "data_pipeline_access@${var.project_id}.iam.gserviceaccount.com"
     }
   }
   traffic {
     percent         = 100
     latest_revision = true
   }
+  depends_on = [ google_project_service.run ]
 }
 
 data "google_iam_policy" "noauth" {
@@ -160,7 +160,67 @@ resource "google_bigquery_dataset" "bq_dataset" {
   }
 }
 
-# Pubsub topic
+# Pub/Sub topic
 resource "google_pubsub_topic" "ps_topic" {
-  name = 
+  name = "hyp-pubsub-topic"
+
+  labels = {
+    created = "terraform"
+  }
+
+  depends_on = [google_project_service.pubsub]
+}
+
+# Pipeline 1: Cloud Run proxy -> Pubsub -> BigQuery
+
+resource "google_bigquery_table" "bq_table_bqdirect" {
+  dataset_id          = google_bigquery_dataset.bq_dataset.dataset_id
+  table_id            = "pubsubdirect"
+  deletion_protection = false
+
+  labels = {
+    env = "default"
+  }
+
+  schema = <<EOF
+  [
+    {
+      "name": "data",
+      "type": "STRING",
+      "mode": "NULLABLE",
+      "description": "JSON data from Pub/Sub"
+    }
+  ]
+  EOF
+}
+
+resource "google_project_iam_member" "viewer" {
+  project = var.project_id
+  role    = "roles/bigquery.dataViewer"
+  member  = "serviceAccount:service-${data.google_project.project.number}@gcp-sa-pubsub.iam.gserviceaccount.com"
+}
+
+resource "google_project_iam_member" "editor" {
+  project = var.project_id
+  role    = "roles/bigquery.dataEditor"
+  member  = "serviceAccount:service-${data.google_project.project.number}@gcp-sa-pubsub.iam.gserviceaccount.com"
+}
+
+resource "google_pubsub_subscription" "sub_bqdirect" {
+  name  = "hyp_subscription_bq_direct"
+  topic = google_pubsub_topic.ps_topic.name
+
+  bigquery_config {
+    table = "${google_bigquery_table.bq_table_bqdirect.project}:${google_bigquery_table.bq_table_bqdirect.dataset_id}.${google_bigquery_table.bq_table_bqdirect.table_id}"
+  }
+
+  depends_on = [google_project_iam_member.viewer, google_project_iam_member.editor]
+
+  labels                = { created = "terraform" }
+  retain_acked_messages = false
+  ack_deadline_seconds  = 20
+  retry_policy {
+    minimum_backoff = "10s"
+  }
+  enable_message_ordering = false
 }
