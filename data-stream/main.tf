@@ -14,12 +14,6 @@ provider "google" {
   region  = var.gcp_region
 }
 
-variable "environment" {
-  default = "dev"
-  type = string
-  description = "The environment to deploy to"
-}
-
 data "google_project" "project" {}
 
 # Define network and subnetwork: vpc_network, vpc_subnetwork
