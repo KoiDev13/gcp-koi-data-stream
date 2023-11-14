@@ -73,7 +73,7 @@ def main(endpoint):
             r = requests.post(endpoint, json=purchase_anomaly_payload)
 
     # print(r.text)
-    print(f'{time.time()} -- {r.status_code}')
+    print(f'{time.time()} -- {r.status_code} -- {r.text}')
 
 
 if __name__ == "__main__":

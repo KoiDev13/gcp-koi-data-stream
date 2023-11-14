@@ -51,10 +51,10 @@ class FormatByRow(beam.PTransform):
             pcoll
             | 'Map' >> beam.Map(lambda elem: {
                 'user_id': elem[0],
-                'total_purchase': elem[1]
+                'summed_value': elem[1]
             })
         )
-    return (row_val)
+        return (row_val)
 
 # Function to streaming pipeline
 def streaming_pipeline(project, region):
