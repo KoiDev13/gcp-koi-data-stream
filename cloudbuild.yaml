@@ -1,6 +1,4 @@
 steps:
-  - name: 'gcr.io/cloud-builders/git'
-    args: ['clone', 'https://github.com/KoiDev13/gcp-koi-data-stream.git']
   - name: 'hashicorp/terraform:latest'
     entrypoint: 'sh'
     args:
@@ -18,7 +16,7 @@ steps:
         fi
 
         terraform init
-        
+
         if [[ "$BRANCH_NAME" == "main" ]]; then
           terraform plan -var-file=gcp-env-prod.tfvars
         elif [[ $BRANCH_NAME =~ ^feature\/ || $BRANCH_NAME == "develop" ]]; then
