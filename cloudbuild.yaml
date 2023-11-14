@@ -17,14 +17,16 @@ steps:
   args:
     - "-c"
     - |
+        pwd
         if [[ "$BRANCH_NAME" == "main" ]]; then
-          terraform workspace new gcp-env-prod || terraform workspace select gcp-env-prod
-          terraform workspace select gcp-env-prod
-        elif [[ $BRANCH_NAME =~ ^feature\/ || $BRANCH_NAME == "develop" ]] then
-          terraform workspace new gcp-env-dev || terraform workspace select gcp-env-dev
+            terraform workspace new gcp-env-prod || terraform workspace select gcp-env-prod
+            terraform workspace select gcp-env-prod
+        elif [[ $BRANCH_NAME =~ ^feature\/ || $BRANCH_NAME == "develop" ]]; then
+            terraform workspace new gcp-env-dev || terraform workspace select gcp-env-dev
         else
-          echo "No matching branch tag found. Skipping Terraform execution."
+            echo "No matching branch tag found. Skipping Terraform execution."
         fi
+
 
 - id: 'Terraform init'
   name: 'hashicorp/terraform:1.0.9'
