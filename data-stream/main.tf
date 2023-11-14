@@ -248,7 +248,7 @@ resource "google_cloud_run_service" "hyp_run_service_data_processing" {
 }
 
 # Make cloud run service public  -> noauth
-resource "google_cloud_run_service_iam_policy" "noauth" {
+resource "google_cloud_run_service_iam_policy" "noauth_dp" {
   location    = google_cloud_run_service.hyp_run_service_data_processing.location
   project     = google_cloud_run_service.hyp_run_service_data_processing.project
   service     = google_cloud_run_service.hyp_run_service_data_processing.name

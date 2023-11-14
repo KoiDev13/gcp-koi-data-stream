@@ -10,6 +10,8 @@ variable "delete_contents_on_destroy" {
 
 variable "force_destroy" {
   description = "When deleting a bucket, this boolean option will delete all contained objects. If false, Terraform will fail to delete buckets which contain objects."
+  type        = bool
+  default     = true
 }
 
 variable "gcp_region" {
