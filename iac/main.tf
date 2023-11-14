@@ -319,3 +319,4 @@ resource "google_dataflow_flex_template_job" "dataflow_stream" {
     "runner"                = "DataflowRunner"
   }
 }
+
