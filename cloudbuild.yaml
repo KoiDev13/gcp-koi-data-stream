@@ -1,23 +1,13 @@
 steps:
-- id: "Get branch name"
-  name: 'alpine'
-  entrypoint: 'sh'
-  args:
-    - "-c"
-    - |
-        echo "*******************"
-        echo "$BRANCH_NAME"
-        echo "*******************"
+  - name: 'gcr.io/cloud-builders/git'
+    args: ['clone', 'https://github.com/KoiDev13/gcp-koi-data-stream.git']
+  - name: 'hashicorp/terraform:latest'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
         cd ./iac/
-        ls -la
-
-- id: "Choosing work space"
-  name: 'hashicorp/terraform:1.0.9'
-  entrypoint: 'sh'
-  args:
-    - "-c"
-    - |
-        pwd
+        echo "BRANCH_NAME: $BRANCH_NAME"
         if [[ "$BRANCH_NAME" == "main" ]]; then
             terraform workspace new gcp-env-prod || terraform workspace select gcp-env-prod
             terraform workspace select gcp-env-prod
@@ -27,26 +17,12 @@ steps:
             echo "No matching branch tag found. Skipping Terraform execution."
         fi
 
-
-- id: 'Terraform init'
-  name: 'hashicorp/terraform:1.0.9'
-  entrypoint: 'sh'
-  args:
-    - "-c"
-    - |
         terraform init
-
-- id: 'Terraform plan'
-  name: 'hashicorp/terraform:1.0.9'
-  entrypoint: 'sh'
-  args:
-    - "-c"
-    - |
-        cd ./iac/
+        
         if [[ "$BRANCH_NAME" == "main" ]]; then
-            terraform plan -var-file gcp-env-prod.tfvars
+          terraform plan -var-file=gcp-env-prod.tfvars
         elif [[ $BRANCH_NAME =~ ^feature\/ || $BRANCH_NAME == "develop" ]]; then
-            terraform plan -var-file gcp-env-dev.tfvars
+          terraform plan -var-file=gcp-env-dev.tfvars
         else
-            echo "No matching branch tag found. Skipping Terraform execution."
+          echo "No matching branch tag found. Skipping Terraform execution."
         fi
