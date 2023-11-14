@@ -132,10 +132,6 @@ resource "google_cloud_run_service_iam_policy" "noauth" {
   policy_data = data.google_iam_policy.noauth.policy_data
 }
 
-output "cloud_run_proxy_url" {
-  value = google_cloud_run_service.pubsub_proxy_hyp.status[0].url
-}
-
 # BigQuery dataset
 
 resource "google_bigquery_dataset" "bq_dataset" {
@@ -281,7 +277,8 @@ resource "google_bigquery_table" "bq_table_cloud_run" {
     env = "default"
   }
   
-  schema = file("./datalayer/ecommerce_events_bq_schema.json")
+  # TODO: Make file path dynamic
+  schema = file("./data-schema/ecommerce_events_bq_schema.json")
 }
 
 #Pipeline 3: Cloud Run proxy -> Pubsub -> Dataflow -> BigQuery
