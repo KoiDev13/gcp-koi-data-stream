@@ -43,10 +43,9 @@ steps:
     - "-c"
     - |
         if [[ "$BRANCH_NAME" == "main" ]]; then
-          terraform plan -var-file gcp-env-prod.tfvars
-        elif [[ $BRANCH_NAME =~ ^feature\/ || $BRANCH_NAME == "develop" ]] then
-          terraform plan -var-file gcp-env-dev.tfvars
+            terraform plan -var-file gcp-env-prod.tfvars
+        elif [[ $BRANCH_NAME =~ ^feature\/ || $BRANCH_NAME == "develop" ]]; then
+            terraform plan -var-file gcp-env-dev.tfvars
         else
-          echo "No matching branch tag found. Skipping Terraform execution."
+            echo "No matching branch tag found. Skipping Terraform execution."
         fi
-
