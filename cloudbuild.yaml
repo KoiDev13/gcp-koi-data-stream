@@ -4,8 +4,11 @@ steps:
     args:
       - '-c'
       - |
+        echo "*******************"
+        echo "$BRANCH_NAME"
+        echo "*******************"
         cd ./iac/
-        echo "BRANCH_NAME: $BRANCH_NAME"
+        
         if [[ "$BRANCH_NAME" == "main" ]]; then
             terraform workspace new gcp-env-prod || terraform workspace select gcp-env-prod
             terraform workspace select gcp-env-prod
