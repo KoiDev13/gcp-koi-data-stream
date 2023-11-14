@@ -224,3 +224,7 @@ resource "google_pubsub_subscription" "sub_bqdirect" {
   }
   enable_message_ordering = false
 }
+
+#Pipeline 2: Cloud Run proxy -> Pubsub -> Cloud Run -> BigQuery
+
+#Pipeline 3: Cloud Run proxy -> Pubsub -> Dataflow -> BigQuery
