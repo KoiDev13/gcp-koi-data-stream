@@ -32,6 +32,7 @@ steps:
     args:
       - '-c'
       - |
+        cd ./iac/
         if [[ "$BRANCH_NAME" == "main" ]]; then
           terraform plan -var-file=gcp-env-prod.tfvars
         elif [[ $BRANCH_NAME =~ ^feature\/ || $BRANCH_NAME == "develop" ]]; then
