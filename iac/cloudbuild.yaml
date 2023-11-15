@@ -44,9 +44,18 @@ steps:
           echo "No matching branch tag found. Skipping Terraform execution."
         fi
   
-  # Pause for manual approval
-  - name: 'gcr.io/cloud-builders/gcloud'
-    entrypoint: 'bash'
+  # Terraform Apply step
+  - id: 'tf-apply'
+    name: 'hashicorp/terraform:latest'
+    entrypoint: 'sh'
     args:
       - '-c'
-      - 'echo "Waiting for manual approval..."'
+      - |
+        cd ./iac/
+        if [[ "$BRANCH_NAME" == "main" ]]; then
+          terraform apply -auto-approve -var-file=gcp-env-prod.tfvars
+        elif [[ $BRANCH_NAME =~ ^feature\/ || $BRANCH_NAME == "develop" ]]; then
+          terraform apply -auto-approve -var-file=gcp-env-dev.tfvars
+        else
+          echo "No matching branch tag found. Skipping Terraform execution."
+        fi
