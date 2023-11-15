@@ -281,42 +281,42 @@ resource "google_bigquery_table" "bq_table_cloud_run" {
   schema = file("./data-schema/ecommerce_events_bq_schema.json")
 }
 
-# #Pipeline 3: Cloud Run proxy -> Pubsub -> Dataflow -> BigQuery
+#Pipeline 3: Cloud Run proxy -> Pubsub -> Dataflow -> BigQuery
 
-# resource "google_pubsub_subscription" "hyp_sub_dataflow" {
-#   name  = "hyp_subscription_dataflow"
-#   topic = google_pubsub_topic.ps_topic.name
+resource "google_pubsub_subscription" "hyp_sub_dataflow" {
+  name  = "hyp_subscription_dataflow"
+  topic = google_pubsub_topic.ps_topic.name
 
-#   labels = {
-#     created = "terraform"
-#   }
+  labels = {
+    created = "terraform"
+  }
 
-#   retain_acked_messages = false
+  retain_acked_messages = false
 
-#   ack_deadline_seconds = 20
+  ack_deadline_seconds = 20
 
 
-#   retry_policy {
-#     minimum_backoff = "10s"
-#   }
+  retry_policy {
+    minimum_backoff = "10s"
+  }
 
-#   enable_message_ordering = false
-# }
+  enable_message_ordering = false
+}
 
-# resource "google_dataflow_flex_template_job" "dataflow_stream" {
-#   provider                = google-beta
-#   name                    = "ecommerce-events-ps-to-bq-stream"
-#   container_spec_gcs_path = "gs://${var.project_id}-ecommerce-events/df_templates/dataflow_template.json"
-#   region                  = var.gcp_region
-#   project                 = var.project_id
-#   depends_on              = [google_project_service.compute, google_project_service.dataflow]
-#   parameters = {
-#     "on_delete"             = "cancel"
-#     "service_account_email" = "${google_service_account.data_pipeline_access.email}"
-#     "network"               = "${google_compute_network.vpc_network.name}"
-#     "max_workers"           = 1
-#     "temp_location"         = "gs://${var.project_id}-ecommerce-events/df_tmp_dir"
-#     "runner"                = "DataflowRunner"
-#   }
-# }
+resource "google_dataflow_flex_template_job" "dataflow_stream" {
+  provider                = google-beta
+  name                    = "ecommerce-events-ps-to-bq-stream"
+  container_spec_gcs_path = "gs://${var.project_id}-ecommerce-events/df_templates/dataflow_template.json"
+  region                  = var.gcp_region
+  project                 = var.project_id
+  depends_on              = [google_project_service.compute, google_project_service.dataflow]
+  parameters = {
+    "on_delete"             = "cancel"
+    "service_account_email" = "${google_service_account.data_pipeline_access.email}"
+    "network"               = "${google_compute_network.vpc_network.name}"
+    "max_workers"           = 1
+    "temp_location"         = "gs://${var.project_id}-ecommerce-events/df_tmp_dir"
+    "runner"                = "DataflowRunner"
+  }
+}
 
