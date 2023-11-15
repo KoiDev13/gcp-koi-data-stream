@@ -17,7 +17,6 @@ steps:
     args:
       - '-c'
       - |
-        cd ./iac/
         if [[ "$BRANCH_NAME" == "main" ]]; then
             terraform workspace new gcp-env-prod || terraform workspace select gcp-env-prod
             terraform workspace select gcp-env-prod
@@ -35,7 +34,6 @@ steps:
     args:
       - '-c'
       - |
-        cd ./iac/
         if [[ "$BRANCH_NAME" == "main" ]]; then
           terraform plan -var-file=gcp-env-prod.tfvars
         elif [[ $BRANCH_NAME =~ ^feature\/ || $BRANCH_NAME == "develop" ]]; then
@@ -43,27 +41,3 @@ steps:
         else
           echo "No matching branch tag found. Skipping Terraform execution."
         fi
-  
-  # Pause for manual approval
-  - id: 'manual-approval'
-    name: 'gcr.io/cloud-builders/gcloud'
-    entrypoint: 'sh'
-    args:
-      - '-c'
-      - 'echo "Waiting for manual approval..."'
-  
-  # Apply changes
-  - name: 'hashicorp/terraform:latest'
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |
-        cd ./iac/
-        if [[ "$BRANCH_NAME" == "main" ]]; then
-          terraform apply -var-file=gcp-env-prod.tfvars
-        elif [[ $BRANCH_NAME =~ ^feature\/ || $BRANCH_NAME == "develop" ]]; then
-          terraform apply -var-file=gcp-env-dev.tfvars
-        else
-          echo "No matching branch tag found. Skipping Terraform execution."
-        fi
-    waitFor: ['manual-approval']
