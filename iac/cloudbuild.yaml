@@ -43,3 +43,10 @@ steps:
         else
           echo "No matching branch tag found. Skipping Terraform execution."
         fi
+  
+  # Pause for manual approval
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - 'echo "Waiting for manual approval..."'
