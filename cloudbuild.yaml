@@ -1,4 +1,5 @@
 steps:
+  # Checkout the repo to the Cloud Build working directory
   - id: 'branch-name'
     name: 'hashicorp/terraform:latest'
     entrypoint: 'sh'
@@ -9,6 +10,7 @@ steps:
         echo "$BRANCH_NAME"
         echo "*******************"
 
+  # Terraform init step: initialize the Terraform working directory
   - id: 'tf-init'
     name: 'hashicorp/terraform:latest'
     entrypoint: 'sh'
@@ -26,6 +28,7 @@ steps:
         fi
         terraform init
 
+  # Terraform Plan step
   - id: 'tf-plan'
     name: 'hashicorp/terraform:latest'
     entrypoint: 'sh'
@@ -40,3 +43,27 @@ steps:
         else
           echo "No matching branch tag found. Skipping Terraform execution."
         fi
+  
+  # Pause for manual approval
+  - id: 'manual-approval'
+    name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - 'echo "Waiting for manual approval..."'
+  
+  # Apply changes
+  - name: 'hashicorp/terraform:latest'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        cd ./iac/
+        if [[ "$BRANCH_NAME" == "main" ]]; then
+          terraform apply -var-file=gcp-env-prod.tfvars
+        elif [[ $BRANCH_NAME =~ ^feature\/ || $BRANCH_NAME == "develop" ]]; then
+          terraform apply -var-file=gcp-env-dev.tfvars
+        else
+          echo "No matching branch tag found. Skipping Terraform execution."
+        fi
+    waitFor: ['manual-approval']
