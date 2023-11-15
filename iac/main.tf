@@ -65,13 +65,13 @@ resource "google_project_iam_member" "dataflow_storage_object_admin" {
   member  = "serviceAccount:${google_service_account.data_pipeline_access.email}"
 }
 
-data "google_compute_default_service_account" "default" {}
+# data "google_compute_default_service_account" "default" {}
 
-resource "google_project_iam_member" "gce_pub_sub_admin" {
-  project = var.project_id
-  role    = "roles/pubsub.admin"
-  member  = "serviceAccount:${data.google_compute_default_service_account.default.email}"
-}
+# resource "google_project_iam_member" "gce_pub_sub_admin" {
+#   project = var.project_id
+#   role    = "roles/pubsub.admin"
+#   member  = "serviceAccount:${data.google_compute_default_service_account.default.email}"
+# }
 
 # Enabling APIs: compute, run, dataflow, pubsub
 
