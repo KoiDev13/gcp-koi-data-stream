@@ -1,0 +1,77 @@
+steps:
+  # Checkout the repo to the Cloud Build working directory
+  - id: 'branch-name'
+    name: 'hashicorp/terraform:latest'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        echo "*******************"
+        echo "$BRANCH_NAME"
+        echo "*******************"
+
+  # Terraform init step: initialize the Terraform working directory
+  - id: 'tf-init'
+    name: 'hashicorp/terraform:latest'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        cd ./iac/
+        if [[ "$BRANCH_NAME" == "main" ]]; then
+            terraform workspace new gcp-env-prod || terraform workspace select gcp-env-prod
+            terraform workspace select gcp-env-prod
+        elif [[ $BRANCH_NAME =~ ^feature\/ || $BRANCH_NAME == "develop" ]]; then
+            terraform workspace new gcp-env-dev || terraform workspace select gcp-env-dev
+        else
+            echo "No matching branch tag found. Skipping Terraform execution."
+        fi
+        terraform init
+
+  # Terraform Plan step
+  - id: 'tf-plan'
+    name: 'hashicorp/terraform:latest'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        cd ./iac/
+        if [[ "$BRANCH_NAME" == "main" ]]; then
+          terraform plan -var-file=gcp-env-prod.tfvars
+        if [[ "$BRANCH_NAME" == "uat" ]]; then
+          terraform plan -var-file=gcp-env-uat.tfvars
+        elif [[ $BRANCH_NAME =~ ^feature\/ || $BRANCH_NAME == "develop" ]]; then
+          terraform plan -var-file=gcp-env-dev.tfvars
+        else
+          echo "No matching branch tag found. Skipping Terraform execution."
+        fi
+  
+  # Terraform Apply step
+  - id: 'tf-apply'
+    name: 'hashicorp/terraform:latest'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        cd ./iac/
+        if [[ "$BRANCH_NAME" == "main" ]]; then
+          terraform apply -auto-approve -var-file=gcp-env-prod.tfvars
+        if [[ "$BRANCH_NAME" == "uat" ]]; then
+          terraform apply -auto-approve -var-file=gcp-env-prod.tfvars
+        elif [[ $BRANCH_NAME =~ ^feature\/ || $BRANCH_NAME == "develop" ]]; then
+          terraform apply -auto-approve -var-file=gcp-env-dev.tfvars
+        else
+          echo "No matching branch tag found. Skipping Terraform execution."
+        fi
+
+  - id: 'tf-destroy'
+    name: 'hashicorp/terraform:latest'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        cd ./iac/
+        terraform destroy -auto-approve
+        
+options:
+  logging: CLOUD_LOGGING_ONLY

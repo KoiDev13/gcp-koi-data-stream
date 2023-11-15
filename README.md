@@ -28,4 +28,4 @@ Install [Terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-
 
 ## Preferences  
 
-Big thanks to **@Nucleus Engineering** [hack-your-pipie/01_ingest_and_transform](https://github.com/NucleusEngineering/hack-your-pipe/tree/main/01_ingest_and_transform)  
+Big thanks to **@Nucleus Engineering** [hack-your-pipie/01_ingest_and_transform](https://github.com/NucleusEngineering/hack-your-pipe/tree/main/01_ingest_and_transform/11_challenge)  

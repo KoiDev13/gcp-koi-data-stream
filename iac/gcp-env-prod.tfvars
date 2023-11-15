@@ -1,2 +1,2 @@
-project_id                 = "khoi-prod-001-01"
+project_id                 = "<gcp-project-id>"
 delete_contents_on_destroy = true

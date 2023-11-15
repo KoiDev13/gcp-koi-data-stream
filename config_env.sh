@@ -1,6 +1,6 @@
 #! /bin/bash
 
-export GCP_PROJECT="khoi-test-001-01"
+export GCP_PROJECT="<gcp-project-id>"
 export ENDPOINT_URL="https://hyp-run-service-pubsub-proxy-hzjecjj6vq-uc.a.run.app" # doesn't need to be defined in the very beginning
 export PUSH_ENDPOINT='<processing-endpoint-url>' # doesn't need to be defined in the very beginning
 export GCP_REGION=us-central1
