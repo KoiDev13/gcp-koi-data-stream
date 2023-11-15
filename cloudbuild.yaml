@@ -1,5 +1,6 @@
 steps:
-  - name: 'hashicorp/terraform:latest'
+  - id: 'branch-name'
+    name: 'hashicorp/terraform:latest'
     entrypoint: 'sh'
     args:
       - '-c'
@@ -7,8 +8,14 @@ steps:
         echo "*******************"
         echo "$BRANCH_NAME"
         echo "*******************"
+
+  - id: 'tf-init'
+    name: 'hashicorp/terraform:latest'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
         cd ./iac/
-        
         if [[ "$BRANCH_NAME" == "main" ]]; then
             terraform workspace new gcp-env-prod || terraform workspace select gcp-env-prod
             terraform workspace select gcp-env-prod
@@ -17,9 +24,14 @@ steps:
         else
             echo "No matching branch tag found. Skipping Terraform execution."
         fi
-
         terraform init
 
+  - id: 'tf-plan'
+    name: 'hashicorp/terraform:latest'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
         if [[ "$BRANCH_NAME" == "main" ]]; then
           terraform plan -var-file=gcp-env-prod.tfvars
         elif [[ $BRANCH_NAME =~ ^feature\/ || $BRANCH_NAME == "develop" ]]; then
