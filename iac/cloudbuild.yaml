@@ -59,4 +59,6 @@ steps:
         else
           echo "No matching branch tag found. Skipping Terraform execution."
         fi
-        
+  
+options:
+  logging: CLOUD_LOGGING_ONLY
