@@ -38,6 +38,8 @@ steps:
         cd ./iac/
         if [[ "$BRANCH_NAME" == "main" ]]; then
           terraform plan -var-file=gcp-env-prod.tfvars
+        if [[ "$BRANCH_NAME" == "uat" ]]; then
+          terraform plan -var-file=gcp-env-uat.tfvars
         elif [[ $BRANCH_NAME =~ ^feature\/ || $BRANCH_NAME == "develop" ]]; then
           terraform plan -var-file=gcp-env-dev.tfvars
         else
@@ -53,6 +55,8 @@ steps:
       - |
         cd ./iac/
         if [[ "$BRANCH_NAME" == "main" ]]; then
+          terraform apply -auto-approve -var-file=gcp-env-prod.tfvars
+        if [[ "$BRANCH_NAME" == "uat" ]]; then
           terraform apply -auto-approve -var-file=gcp-env-prod.tfvars
         elif [[ $BRANCH_NAME =~ ^feature\/ || $BRANCH_NAME == "develop" ]]; then
           terraform apply -auto-approve -var-file=gcp-env-dev.tfvars

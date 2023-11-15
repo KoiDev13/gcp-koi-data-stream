@@ -12,5 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-project_id = 'khoi-test-001-01'
+project_id = '<gcp-project-id>'
 location = 'us-central1'
