@@ -158,165 +158,165 @@ resource "google_pubsub_topic" "ps_topic" {
   depends_on = [google_project_service.pubsub]
 }
 
-# Pipeline 1: Cloud Run proxy -> Pubsub -> BigQuery
+# # Pipeline 1: Cloud Run proxy -> Pubsub -> BigQuery
 
-resource "google_bigquery_table" "bq_table_bqdirect" {
-  dataset_id          = google_bigquery_dataset.bq_dataset.dataset_id
-  table_id            = "pubsubdirect"
-  deletion_protection = false
+# resource "google_bigquery_table" "bq_table_bqdirect" {
+#   dataset_id          = google_bigquery_dataset.bq_dataset.dataset_id
+#   table_id            = "pubsubdirect"
+#   deletion_protection = false
 
-  labels = {
-    env = "default"
-  }
+#   labels = {
+#     env = "default"
+#   }
 
-  schema = <<EOF
-  [
-    {
-      "name": "data",
-      "type": "STRING",
-      "mode": "NULLABLE",
-      "description": "JSON data from Pub/Sub"
-    }
-  ]
-  EOF
-}
+#   schema = <<EOF
+#   [
+#     {
+#       "name": "data",
+#       "type": "STRING",
+#       "mode": "NULLABLE",
+#       "description": "JSON data from Pub/Sub"
+#     }
+#   ]
+#   EOF
+# }
 
-resource "google_project_iam_member" "viewer" {
-  project = var.project_id
-  role    = "roles/bigquery.dataViewer"
-  member  = "serviceAccount:service-${data.google_project.project.number}@gcp-sa-pubsub.iam.gserviceaccount.com"
-}
+# resource "google_project_iam_member" "viewer" {
+#   project = var.project_id
+#   role    = "roles/bigquery.dataViewer"
+#   member  = "serviceAccount:service-${data.google_project.project.number}@gcp-sa-pubsub.iam.gserviceaccount.com"
+# }
 
-resource "google_project_iam_member" "editor" {
-  project = var.project_id
-  role    = "roles/bigquery.dataEditor"
-  member  = "serviceAccount:service-${data.google_project.project.number}@gcp-sa-pubsub.iam.gserviceaccount.com"
-}
+# resource "google_project_iam_member" "editor" {
+#   project = var.project_id
+#   role    = "roles/bigquery.dataEditor"
+#   member  = "serviceAccount:service-${data.google_project.project.number}@gcp-sa-pubsub.iam.gserviceaccount.com"
+# }
 
-resource "google_pubsub_subscription" "sub_bqdirect" {
-  name  = "hyp_subscription_bq_direct"
-  topic = google_pubsub_topic.ps_topic.name
+# resource "google_pubsub_subscription" "sub_bqdirect" {
+#   name  = "hyp_subscription_bq_direct"
+#   topic = google_pubsub_topic.ps_topic.name
 
-  bigquery_config {
-    table = "${google_bigquery_table.bq_table_bqdirect.project}:${google_bigquery_table.bq_table_bqdirect.dataset_id}.${google_bigquery_table.bq_table_bqdirect.table_id}"
-  }
+#   bigquery_config {
+#     table = "${google_bigquery_table.bq_table_bqdirect.project}:${google_bigquery_table.bq_table_bqdirect.dataset_id}.${google_bigquery_table.bq_table_bqdirect.table_id}"
+#   }
 
-  depends_on = [google_project_iam_member.viewer, google_project_iam_member.editor]
+#   depends_on = [google_project_iam_member.viewer, google_project_iam_member.editor]
 
-  labels                = { created = "terraform" }
-  retain_acked_messages = false
-  ack_deadline_seconds  = 20
-  retry_policy {
-    minimum_backoff = "10s"
-  }
-  enable_message_ordering = false
-}
+#   labels                = { created = "terraform" }
+#   retain_acked_messages = false
+#   ack_deadline_seconds  = 20
+#   retry_policy {
+#     minimum_backoff = "10s"
+#   }
+#   enable_message_ordering = false
+# }
 
-#Pipeline 2: Cloud Run proxy -> Pubsub -> Cloud Run -> BigQuery
-resource "google_cloud_run_service" "hyp_run_service_data_processing" {
-  name     = "hyp-run-service-data-processing"
-  location = var.gcp_region
+# #Pipeline 2: Cloud Run proxy -> Pubsub -> Cloud Run -> BigQuery
+# resource "google_cloud_run_service" "hyp_run_service_data_processing" {
+#   name     = "hyp-run-service-data-processing"
+#   location = var.gcp_region
 
-  template {
-    spec {
-      containers {
-        image = "gcr.io/${var.project_id}/data-processing-service"
-      }
-    }
-  }
+#   template {
+#     spec {
+#       containers {
+#         image = "gcr.io/${var.project_id}/data-processing-service"
+#       }
+#     }
+#   }
 
-  traffic {
-    percent         = 100
-    latest_revision = true
-  }
+#   traffic {
+#     percent         = 100
+#     latest_revision = true
+#   }
 
-  depends_on = [google_project_service.run]
+#   depends_on = [google_project_service.run]
 
-}
+# }
 
-# Make cloud run service public  -> noauth
-resource "google_cloud_run_service_iam_policy" "noauth_dp" {
-  location    = google_cloud_run_service.hyp_run_service_data_processing.location
-  project     = google_cloud_run_service.hyp_run_service_data_processing.project
-  service     = google_cloud_run_service.hyp_run_service_data_processing.name
-  policy_data = data.google_iam_policy.noauth.policy_data
-}
+# # Make cloud run service public  -> noauth
+# resource "google_cloud_run_service_iam_policy" "noauth_dp" {
+#   location    = google_cloud_run_service.hyp_run_service_data_processing.location
+#   project     = google_cloud_run_service.hyp_run_service_data_processing.project
+#   service     = google_cloud_run_service.hyp_run_service_data_processing.name
+#   policy_data = data.google_iam_policy.noauth.policy_data
+# }
 
-resource "google_pubsub_subscription" "hyp_sub_cloud_run" {
-  name  = "hyp_subscription_cloud_run"
-  topic = google_pubsub_topic.ps_topic.name
-  labels = {
-    created = "terraform"
-  }
+# resource "google_pubsub_subscription" "hyp_sub_cloud_run" {
+#   name  = "hyp_subscription_cloud_run"
+#   topic = google_pubsub_topic.ps_topic.name
+#   labels = {
+#     created = "terraform"
+#   }
 
 
-  push_config {
-    push_endpoint = google_cloud_run_service.hyp_run_service_data_processing.status[0].url
-    attributes = {
-      x-goog-version = "v1"
-    }
-  }
-  retain_acked_messages = false
-  ack_deadline_seconds  = 20
-  retry_policy {
-    minimum_backoff = "10s"
-  }
-  enable_message_ordering = false
-}
+#   push_config {
+#     push_endpoint = google_cloud_run_service.hyp_run_service_data_processing.status[0].url
+#     attributes = {
+#       x-goog-version = "v1"
+#     }
+#   }
+#   retain_acked_messages = false
+#   ack_deadline_seconds  = 20
+#   retry_policy {
+#     minimum_backoff = "10s"
+#   }
+#   enable_message_ordering = false
+# }
 
-resource "google_bigquery_table" "bq_table_cloud_run" {
-  dataset_id = google_bigquery_dataset.bq_dataset.dataset_id
-  table_id = "cloud_run"
-  deletion_protection = false
+# resource "google_bigquery_table" "bq_table_cloud_run" {
+#   dataset_id = google_bigquery_dataset.bq_dataset.dataset_id
+#   table_id = "cloud_run"
+#   deletion_protection = false
 
-  time_partitioning {
-    type = "DAY"
-    field = "event_datetime"
-  }
-  labels = {
-    env = "default"
-  }
+#   time_partitioning {
+#     type = "DAY"
+#     field = "event_datetime"
+#   }
+#   labels = {
+#     env = "default"
+#   }
   
-  # TODO: Make file path dynamic
-  schema = file("./data-schema/ecommerce_events_bq_schema.json")
-}
+#   # TODO: Make file path dynamic
+#   schema = file("./data-schema/ecommerce_events_bq_schema.json")
+# }
 
-#Pipeline 3: Cloud Run proxy -> Pubsub -> Dataflow -> BigQuery
+# #Pipeline 3: Cloud Run proxy -> Pubsub -> Dataflow -> BigQuery
 
-resource "google_pubsub_subscription" "hyp_sub_dataflow" {
-  name  = "hyp_subscription_dataflow"
-  topic = google_pubsub_topic.ps_topic.name
+# resource "google_pubsub_subscription" "hyp_sub_dataflow" {
+#   name  = "hyp_subscription_dataflow"
+#   topic = google_pubsub_topic.ps_topic.name
 
-  labels = {
-    created = "terraform"
-  }
+#   labels = {
+#     created = "terraform"
+#   }
 
-  retain_acked_messages = false
+#   retain_acked_messages = false
 
-  ack_deadline_seconds = 20
+#   ack_deadline_seconds = 20
 
 
-  retry_policy {
-    minimum_backoff = "10s"
-  }
+#   retry_policy {
+#     minimum_backoff = "10s"
+#   }
 
-  enable_message_ordering = false
-}
+#   enable_message_ordering = false
+# }
 
-resource "google_dataflow_flex_template_job" "dataflow_stream" {
-  provider                = google-beta
-  name                    = "ecommerce-events-ps-to-bq-stream"
-  container_spec_gcs_path = "gs://${var.project_id}-ecommerce-events/df_templates/dataflow_template.json"
-  region                  = var.gcp_region
-  project                 = var.project_id
-  depends_on              = [google_project_service.compute, google_project_service.dataflow]
-  parameters = {
-    "on_delete"             = "cancel"
-    "service_account_email" = "${google_service_account.data_pipeline_access.email}"
-    "network"               = "${google_compute_network.vpc_network.name}"
-    "max_workers"           = 1
-    "temp_location"         = "gs://${var.project_id}-ecommerce-events/df_tmp_dir"
-    "runner"                = "DataflowRunner"
-  }
-}
+# resource "google_dataflow_flex_template_job" "dataflow_stream" {
+#   provider                = google-beta
+#   name                    = "ecommerce-events-ps-to-bq-stream"
+#   container_spec_gcs_path = "gs://${var.project_id}-ecommerce-events/df_templates/dataflow_template.json"
+#   region                  = var.gcp_region
+#   project                 = var.project_id
+#   depends_on              = [google_project_service.compute, google_project_service.dataflow]
+#   parameters = {
+#     "on_delete"             = "cancel"
+#     "service_account_email" = "${google_service_account.data_pipeline_access.email}"
+#     "network"               = "${google_compute_network.vpc_network.name}"
+#     "max_workers"           = 1
+#     "temp_location"         = "gs://${var.project_id}-ecommerce-events/df_tmp_dir"
+#     "runner"                = "DataflowRunner"
+#   }
+# }
 

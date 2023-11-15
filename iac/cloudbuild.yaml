@@ -59,6 +59,15 @@ steps:
         else
           echo "No matching branch tag found. Skipping Terraform execution."
         fi
-  
+
+  - id: 'tf-destroy'
+    name: 'hashicorp/terraform:latest'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        cd ./iac/
+        terraform destroy -auto-approve
+        
 options:
   logging: CLOUD_LOGGING_ONLY
